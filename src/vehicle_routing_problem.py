@@ -75,7 +75,8 @@ def generate_needs(length: int, low: int = 100, high: int = 200) -> Dict[int, in
 
 def vehicle_routing_problem(size: int, amount_of_vehicles: int, load_capacity: int,
                             needs_range: Tuple[int, int], time_limit: int,
-                            use_all_vehicles: bool, random_route: bool):
+                            use_all_vehicles: bool, random_route: bool) -> List:
+    """ Solves Vehicle Routing Problem and displays the best route."""
     points = generate_points(size - 1)
     # print(f'points: {points}')
 
@@ -98,25 +99,23 @@ def vehicle_routing_problem(size: int, amount_of_vehicles: int, load_capacity: i
     prob.num_vehicles = amount_of_vehicles
     prob.use_all_vehicles = use_all_vehicles
 
-    # Solve and display solution
-    # prob.solve(time_limit=300)
-    # prob.solve(greedy=True, time_limit=3000)
-
-    # heuristic_only means the solution found by the Clarke and Wright algorithm.
+    # Clarke and Wright algorithm.
     prob.solve(heuristic_only=True, time_limit=time_limit)
     best_route = prob.best_routes
     best_score = prob.best_value
 
-    # print(f'best_route {best_score} : {best_route}')
-    capacity_check = best_route_capacity_check(best_route, points, needs)
+    # capacity_check = best_route_capacity_check(best_route, points, needs, load_capacity)
     # print('capacity check: ', capacity_check)
-    plot_best_route(points, best_route, best_score)
+
+    # print(f'best_route {best_score} : {best_route}')
+    plot_best_route(best_route, points, best_score)
 
     if random_route:
         random_route = create_random_route(points)
         random_route_score = calculate_random_route_score(random_route, distance_array)
         # print(f'random_route: {random_route_score} : {random_route}')
-        plot_random_route(points, random_route, random_route_score)
+        plot_random_route(random_route, points, random_route_score)
         how_much_better = round(random_route_score * 100 / best_score, 0)
-        print(f'Best score: {best_score:.0f} is {how_much_better}% '
-              f'better than random_route score: {random_route_score:.0f}')
+        print(f'Heuristic route score ({best_score:.0f}) is {how_much_better}% '
+              f'better than random route score ({random_route_score:.0f})')
+    return [best_route, best_score]

@@ -1,30 +1,35 @@
 import matplotlib.pyplot as plt
+from typing import List, Dict
 
 
-def correct_best_route(solution, length):
-    for i in range(len(solution)):
-        for j in range(len(solution[i])):
-            if solution[i][j] == 'Source':
-                solution[i][j] = 0
-            if solution[i][j] == 'Sink':
-                solution[i][j] = length - 1
-    return solution
-
-
-def best_route_capacity_check(route, points, needs):
-    route = correct_best_route(route, len(points))
-    capacity = []
+def correct_best_route(route: Dict, length: int) -> Dict:
+    """ Corrects the best route to be able to plot it."""
     for i in range(len(route)):
-        result = 0
+        for j in range(len(route[i])):
+            if route[i][j] == 'Source':
+                route[i][j] = 0
+            if route[i][j] == 'Sink':
+                route[i][j] = length - 1
+    return route
+
+
+def best_route_capacity_check(route: Dict[int, int], points: List[List[int]], needs: Dict[int, int],
+                              vehicle_capacity: int) -> List:
+    """ Checks if the capacity of every course does not exceed the vehicle capacity."""
+    route = correct_best_route(route, len(points))
+    all_capacities = []
+    for i in range(len(route)):
+        capacity = 0
         for j in range(1, len(route[i]) - 1):
-            result += needs[route[i][j]]
-        if result > 1000:
-            print(f'Route {i} capacity exceeded: {result} > 1000')
-        capacity.append(result)
-    return capacity
+            capacity += needs[route[i][j]]
+        if capacity > vehicle_capacity:
+            print(f'Route {i} capacity exceeded: {capacity} > {vehicle_capacity}')
+        all_capacities.append(capacity)
+    return all_capacities
 
 
-def plot_random_route(points, route, score):
+def plot_random_route(route: List[int], points: List[List[int]], score: float) -> None:
+    """ Plots the random route. """
     plt.figure()
     plt.title(f'Random route: {score:.0f} km')
     for i in range(len(route) - 1):
@@ -33,7 +38,8 @@ def plot_random_route(points, route, score):
     plt.show()
 
 
-def plot_best_route(points, route, score):
+def plot_best_route(route: Dict[int, int], points: List[List[int]], score: float) -> None:
+    """ Plots the best route. """
     route = correct_best_route(route, len(points))
     plt.figure()
     plt.title(f'Best route: {score:.0f} km')
