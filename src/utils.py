@@ -1,5 +1,34 @@
+import numpy as np
+from numpy import ndarray
 import matplotlib.pyplot as plt
 from typing import List, Dict
+
+
+class OverloadedVehicleException(Exception):
+    """ Raised when the vehicle capacity is exceeded. """
+
+    def __init__(self, route_number, generated_capacity, vehicle_capacity):
+        self.msg = f'Route {route_number} capacity exceeded: {generated_capacity} > {vehicle_capacity}'
+
+    def __str__(self):
+        return self.msg
+
+
+def create_random_route(points: List[List[int]]) -> List[int]:
+    """ Returns random route through all the points, doesn't consider the needs."""
+    route = []
+    for i in range(len(points)):
+        route.append(i)
+    np.random.shuffle(route)
+    return route
+
+
+def calculate_random_route_score(route: List[int], distances: ndarray) -> float:
+    """ Returns score of the random route."""
+    result = 0
+    for i in range(len(route) - 1):
+        result += distances[route[i]][route[i + 1]]
+    return result
 
 
 def correct_best_route(route: Dict, length: int) -> Dict:
@@ -14,18 +43,15 @@ def correct_best_route(route: Dict, length: int) -> Dict:
 
 
 def best_route_capacity_check(route: Dict[int, int], points: List[List[int]], needs: Dict[int, int],
-                              vehicle_capacity: int) -> List:
-    """ Checks if the capacity of every course does not exceed the vehicle capacity."""
+                              vehicle_capacity: int) -> None:
+    """ Raises an error if the capacity of any course does exceed the vehicle capacity."""
     route = correct_best_route(route, len(points))
-    all_capacities = []
     for i in range(len(route)):
         capacity = 0
         for j in range(1, len(route[i]) - 1):
             capacity += needs[route[i][j]]
         if capacity > vehicle_capacity:
-            print(f'Route {i} capacity exceeded: {capacity} > {vehicle_capacity}')
-        all_capacities.append(capacity)
-    return all_capacities
+            raise OverloadedVehicleException(i, capacity, vehicle_capacity)
 
 
 def plot_random_route(route: List[int], points: List[List[int]], score: float) -> None:
