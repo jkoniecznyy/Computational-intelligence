@@ -4,8 +4,8 @@ from typing import Tuple, List, Dict
 
 from numpy import ndarray
 from vrpy import VehicleRoutingProblem
-from src.utils import plot_best_route, plot_random_route, best_route_capacity_check, \
-    calculate_random_route_score, create_random_route
+from src.utils import plot_best_route, plot_random_route, best_route_capacity_dict, \
+    calculate_random_route_score, create_random_route, plot_points
 
 
 def generate_starting_point(low: int = 40, high: int = 60) -> List[int]:
@@ -63,7 +63,9 @@ def clarke_and_wright(points_amount: int, amount_of_vehicles: int, load_capacity
     """ Solves Vehicle Routing Problem and displays the best route."""
     # Prepare the data
     points = generate_points(points_amount, points_range[0], points_range[1])
+    print(f'Points: ', points)
     needs = generate_needs(len(points), needs_range[0], needs_range[1])
+    print(f'Needs: ', needs)
     distance_array = generate_distance_array(points)
     distance_array = prepare_distances_for_di_graph(distance_array)
     A = np.array(distance_array, dtype=[("cost", float)])
@@ -78,8 +80,9 @@ def clarke_and_wright(points_amount: int, amount_of_vehicles: int, load_capacity
     prob.solve(heuristic_only=True, time_limit=time_limit)
     best_route = prob.best_routes
     best_score = prob.best_value
-    # Check if the best route is viable and plot it
-    best_route_capacity_check(best_route, points, needs, load_capacity)
+    capacity = best_route_capacity_dict(best_route, points, needs, load_capacity)
+    # Plot staring points and the result
+    plot_points(points)
     plot_best_route(best_route, points, best_score)
     # Plot random route and compare it to the best route
     if random_route:
@@ -89,4 +92,4 @@ def clarke_and_wright(points_amount: int, amount_of_vehicles: int, load_capacity
         how_much_better = round(random_route_score * 100 / best_score, 0)
         print(f'Heuristic route score ({best_score:.0f}) is {how_much_better}% '
               f'better than random route score ({random_route_score:.0f})')
-    return [best_route, best_score]
+    return [best_route, capacity, best_score]
